@@ -24,33 +24,36 @@ const corsOptions = {
 
 // Middleware
 app.use(cors(corsOptions));
+
+app.get("/", (req, res) => {
+  res.json("Node BackEnd");
+})
+
+app.get('/favicon.ico', (req, res) => res.status(204).end()); 
 app.use(bodyParser.json());
 app.use(cookieParser());
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// app.use(
-//   session({   
 
-//     // store: new RedisStore({ client: redisClient }),
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     cookie: { maxAge: 1000 * 60 * 30 }, // 30 minutes
-//     store: new session.MemoryStore({ // Use a proper store in production (e.g., Redis)
-//       checkExpirationInterval: 1000 * 60 * 5, // Clear expired sessions every 5 minutes
-//       expiration: 1000 * 60 * 30, // Sessions expire after 30 minutes
-//   }),
-//   })
-// );
 
 app.use("/api/user", userRoutes);  //base route is /api/user in UserRoutes it will have a child route to to have the controller function 
 
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port: ${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`Server is running on port: ${PORT}`);
+// });
+
+if (process.env.NODE_ENV !== "production") {
+  // const PORT = process.env.PORT || 5001;
+  app.listen(PORT, () => {
+    console.log(`Server is running on port: ${PORT}`);
+  });
+}
+
+module.exports = app;
+
 
 
 
