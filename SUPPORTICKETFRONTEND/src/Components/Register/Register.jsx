@@ -13,6 +13,7 @@ const Register = () => {
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
 
     const { formDataRegister, errorsRegister, image } = useSelector((state) => state.users);
 
@@ -50,7 +51,7 @@ const Register = () => {
     
         try {
             const response = await axios.post(
-                'http://localhost:5001/api/user/register',
+                `${backendURL}/api/user/register`,
                 formDataToSend,
                 {
                     headers: {
