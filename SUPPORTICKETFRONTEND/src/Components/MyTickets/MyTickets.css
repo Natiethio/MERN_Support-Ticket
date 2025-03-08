@@ -1,0 +1,111 @@
+.my-tickets-container {
+    padding: 20px;
+    border-radius: 10px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .table-head{
+    /* background-color: #343a40; */
+    color: white;
+  }
+  
+  .create-ticket-btn {
+    background-color: #343a40;
+    color: white;
+    border-radius: 5px;
+    padding: 8px 15px;
+    border: none;
+  }
+  
+  .create-ticket-btn:hover {
+    background-color: #495057;
+  }
+
+  .table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%; 
+  }
+  
+  .tickets-table {
+    background: white;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: bold;
+    display: inline-block;
+  }
+  
+  .open {
+    padding-left:8px;
+    padding-right:8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 5px;
+    background-color: #bcf0c8;
+    color: #155724;
+  }
+  
+  .in_progress {
+    padding-left:8px;
+    padding-right:8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 5px;
+    background-color: #bcd9f9;
+    color: #004085;
+  }
+  
+  .closed {
+    padding-left:8px;
+    padding-right:8px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    border-radius: 5px;
+    background-color: #f9c9cd;
+    color: #721c24;
+  }
+  
+  .actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+  }
+  
+  .edit-icon {
+    color: #17a2b8;
+    cursor: pointer;
+  }
+  
+  .edit-icon:hover {
+    color: #117a8b;
+  }
+  
+  .delete-icon {
+    color: #dc3545;
+    cursor: pointer;
+  }
+  
+  .delete-icon:hover {
+    color: #bd2130;
+  }
+  
+  .no-tickets {
+    text-align: center;
+    font-style: italic;
+    color: #6c757d;
+  }
+  

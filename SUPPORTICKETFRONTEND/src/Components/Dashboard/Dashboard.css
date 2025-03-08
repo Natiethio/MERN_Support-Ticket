@@ -1,0 +1,52 @@
+.dashboard-container {
+    margin: 40px;
+  }
+  
+  .text-center {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .dashboard-table {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%; 
+  }
+  
+  .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px;
+  }
+  
+  .action-btn i {
+    color: white;
+  }
+  
+  .action-btn.btn-success {
+    background-color: green;
+    border-color: green;
+  }
+  
+  .action-btn.btn-success i {
+    color: white;
+  }
+  
+  .action-btn.btn-danger i {
+    color: white;
+  }
+  .usernamedelete{
+    font-size: large;
+    font-weight: bold;
+  }
+  .profile-image {
+    width: 60px; 
+    height: 60px; 
+    object-fit: cover; 
+    border-radius:100%; 
+  }
+
+
+  
+  

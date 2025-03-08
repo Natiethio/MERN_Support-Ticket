@@ -1,0 +1,118 @@
+.navbar {
+    font-size: 1.5rem;
+    padding: 15px;
+    width:100%;
+}
+
+.navbar .nav-brand {
+    font-size: x-large;
+}
+
+.navbar .nav-link {
+    color: #fff;
+    font-size: 19px;
+    font-weight: 400;
+    margin-right: 20px;
+    transition: color 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.navbar .nav-link:hover {
+    color: #cccccc; /* Slightly darker white */
+}
+
+
+.profile-img {
+    width: 32px;
+    height: 32px;
+    margin-right: 10px;
+}
+
+
+.profile-dropdown {
+    min-width: 250px; 
+    max-width: 300px; 
+    word-wrap: break-word; 
+    white-space: normal; 
+    overflow-wrap: break-word; 
+    padding: 10px;
+    text-align: left;
+}
+
+.profile-dropdown .dropdown-item-text {
+    /* font-size: 14px;  */
+    display: block;
+    word-break: break-word; 
+}
+
+.profile-dropdown .profile-dropname{
+    font-size: 16px;
+}
+
+.profile-dropdown .profile-email{
+    font-size: 12px;
+}
+
+.profile-dropdown .logout-btn {
+    color: red;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+}
+
+.profile-dropdown .logout-btn:hover {
+    background-color: #f8d7da;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    background-color: #343a40;
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-btn2 {
+    display: flex;
+    align-items: center;
+    background-color: #0d6efd;
+    color: white;
+    border: 2px solid white;
+    border-radius: 8px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+    max-width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.profile-btn:hover {
+    background-color: #495057;
+}
+
+.profile-btn2:hover {
+    background-color: #0e67eb;
+}
+
+.profile-name {
+    margin-right: 5px;
+    font-weight: 400;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 120px; 
+}
+
+
+
+
+
