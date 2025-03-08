@@ -8,7 +8,6 @@ const cloudinary = require("../Configration/cloudinaryConfig");
 require('dotenv').config();
 const { Readable } = require("stream");
 const session = require('express-session');
-const { validate } = require('deep-email-validator');
 const { generateSecretToken } = require("../utils/jwtUtils")
 const { generateRefreshToken } = require("../utils/jwtUtils")
 const fs = require("fs");
