@@ -1,25 +1,25 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const userRoutes = require("./src/routes/userRoute");
 const cookieParser = require("cookie-parser");
 const session = require('express-session'); 
 require("dotenv").config();
 const path = require("path");
-
-const userRoutes = require("./src/routes/userRoute");
-
 
 const app = express();
 const PORT = process.env.PORT || 5001;   
 // const RedisStore = require('connect-redis')(   session);
 // const redis = require('redis');  
 
+app.use(bodyParser.json());
+app.use(cookieParser());
 
 const corsOptions = {
   origin: process.env.FRONTEND_URL,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+  // allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
 };
 
 // Middleware
@@ -30,8 +30,7 @@ app.get("/", (req, res) => {
 })
 
 app.get('/favicon.ico', (req, res) => res.status(204).end()); 
-app.use(bodyParser.json());
-app.use(cookieParser());
+
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
