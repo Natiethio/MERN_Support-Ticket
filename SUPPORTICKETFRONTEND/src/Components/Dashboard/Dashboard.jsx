@@ -69,7 +69,7 @@ const Dashboard = () => {
     const id = selectedUser.id;
     const token = JSON.parse(localStorage.getItem('token'));
     try {
-      const response = await axios.delete(`${backendURLocal}/api/user/deleteuser/${id}`, {
+      const response = await axios.delete(`${backendURL}/api/user/deleteuser/${id}`, {
         headers: {
           "Content-Type": "application/json",
         },

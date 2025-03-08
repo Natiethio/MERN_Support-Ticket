@@ -1,8 +1,9 @@
 import axios from 'axios';
+const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
 
 // Create a shared Axios instance
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api', 
+  baseURL: `${backendURL}/api`, 
   withCredentials: true, 
 });
 
