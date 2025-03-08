@@ -24,6 +24,8 @@ const MyTickets = () => {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showModalTicket, setModalTicket] = useState(false);
+    const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
+    const backendURLocal = import.meta.env.VITE_REACT_APP_BACKEND_BASEURLocal;
     const [loading, setLoading] = useState(true)
 
     // const openModal = () => {
@@ -61,7 +63,7 @@ const MyTickets = () => {
     const fetchTickets = async () => {
         setLoading(true)
         try {
-            const response = await axios.get("http://localhost:5001/api/user/mytickets", {
+            const response = await axios.get(`${backendURL}/api/user/mytickets`, {
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -84,7 +86,7 @@ const MyTickets = () => {
         submitButton.disabled = true;
         submitButton.innerHTML = 'Sending...';
         try {
-            await axios.post("http://localhost:5001/api/user/tickets", formDataTicket, {
+            await axios.post(`${backendURL}/api/user/tickets`, formDataTicket, {
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -112,7 +114,7 @@ const MyTickets = () => {
         const id = selectedTicket.id;
         try {
             console.log(id)
-            const response = await axios.delete(`http://localhost:5001/api/user/deleteticket/${id}`, {
+            const response = await axios.delete(`${backendURL}/api/user/deleteticket/${id}`, {
                 headers: {
                     "Content-Type": "application/json",
                 },

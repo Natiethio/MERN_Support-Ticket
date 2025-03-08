@@ -19,6 +19,8 @@ const User = () => {
     const { isAuthenticated } = useContext(AuthContext);
     const [loading, setLoading] = useState(true)
     const { formDataTicket } = useSelector((state) => state.users);
+    const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
+    const backendURLocal = import.meta.env.VITE_REACT_APP_BACKEND_BASEURLocal;
     const dispatch = useDispatch();
 
     const [showModal, setShowModal] = useState(false);
@@ -37,6 +39,9 @@ const User = () => {
         if (isAuthenticated) {
             handleUserData();
         }
+        else{
+            setLoading(false)
+        }
     }, [isAuthenticated]);
 
     useEffect(() => {
@@ -46,7 +51,7 @@ const User = () => {
     async function handleUserData() {
         setLoading(true)
         try {
-            const response = await axios.get('http://localhost:5001/api/user/getnormaluser', {
+            const response = await axios.get(`${backendURL}/api/user/getnormaluser`, {
                 headers: { "Content-Type": "application/json" },
                 withCredentials: true,
             });
@@ -74,7 +79,7 @@ const User = () => {
         submitButton.disabled = true;
         submitButton.innerHTML = 'Sending...';
         try {
-            await axios.post("http://localhost:5001/api/user/tickets", formDataTicket, {
+            await axios.post(`${backendURL}/api/user/tickets`, formDataTicket, {
                 headers: {
                     "Content-Type": "application/json"
                 },

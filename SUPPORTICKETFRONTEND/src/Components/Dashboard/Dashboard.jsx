@@ -20,11 +20,13 @@ const Dashboard = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
-  const dispatch = useDispatch()  //A function that takes a selector function as its first argument. The selector function is responsible for selecting a part of the Redux store's state or computing derived data.
-  const usersredux = useSelector(state => state.users.users) // select a state from a redux store
+  const backendURL = import.meta.env.VITE_REACT_APP_BACKEND_BASEURL;
+  const backendURLocal = import.meta.env.VITE_REACT_APP_BACKEND_BASEURLocal;
+  const dispatch = useDispatch()  
+  const usersredux = useSelector(state => state.users.users) 
 
   useEffect(() => {
-    // Fetch users from the API when the component mounts
+    
     fetchUser()
   }, []);
 
@@ -32,7 +34,7 @@ const Dashboard = () => {
     setLoading(true)
     try{
     
-    const response = await axios.get('http://localhost:5001/api/user/getallusers', { 
+    const response = await axios.get(`${backendURL}/api/user/getallusers`, { 
       headers: {
         "Content-Type": "application/json",
       },
@@ -67,7 +69,7 @@ const Dashboard = () => {
     const id = selectedUser.id;
     const token = JSON.parse(localStorage.getItem('token'));
     try {
-      const response = await axios.delete(`http://localhost:5001/api/user/deleteuser/${id}`, {
+      const response = await axios.delete(`${backendURLocal}/api/user/deleteuser/${id}`, {
         headers: {
           "Content-Type": "application/json",
         },
