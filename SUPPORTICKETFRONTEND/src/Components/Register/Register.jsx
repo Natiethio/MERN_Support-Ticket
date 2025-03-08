@@ -26,7 +26,11 @@ const Register = () => {
     };
 
     const handleFileChange = (e) => {
-        dispatch(updateImage(e.target.files[0]));
+
+        if (e.target.files && e.target.files.length > 0) {
+            dispatch(updateImage(e.target.files[0]));
+        }
+        
     };
 
 

@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import CreateTicket from '../Models/CreateTicket ';
 import CofirmDeleteTicket from "../Models/CofirmDeleteTicket";
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Spinner } from 'react-bootstrap';
 import { getUserTicket } from "../../redux/userSlice";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { deleteTicket } from '../../redux/userSlice.jsx';
@@ -24,6 +24,7 @@ const MyTickets = () => {
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showModalTicket, setModalTicket] = useState(false);
+    const [loading, setLoading] = useState(true)
 
     // const openModal = () => {
     //     if (!isAuthenticated) {
@@ -58,6 +59,7 @@ const MyTickets = () => {
 
 
     const fetchTickets = async () => {
+        setLoading(true)
         try {
             const response = await axios.get("http://localhost:5001/api/user/mytickets", {
                 headers: {
@@ -68,8 +70,12 @@ const MyTickets = () => {
 
             dispatch(getUserTicket(response.data.tickets));
         } catch (error) {
+            setLoading(false)
             console.error("Error fetching tickets:", error);
         }
+        finally{
+            setLoading(false)
+           }
     };
 
     const handleSubmit = async (e) => {
@@ -137,6 +143,16 @@ const MyTickets = () => {
             console.error("There was an error deleting the ticket!", error);
         }
     };
+
+    if (loading) {
+        return (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        );
+      }
 
 
     return (

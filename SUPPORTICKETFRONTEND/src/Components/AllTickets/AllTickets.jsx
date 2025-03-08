@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from "react-redux";
 import axios from "axios";
 import Header from '../Header/Header';
-import { Card, Button, Form } from "react-bootstrap";
+import { Card, Button, Form, Spinner } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { getAllTicket } from "../../redux/userSlice";
@@ -16,6 +16,7 @@ const AllTickets = () => {
     const alltickets = useSelector((state) => state.users.alltickets);
     const [selectedStatus, setSelectedStatus] = useState({});
     const [enableUpdate, setEnableUpdate] = useState({});
+    const [loading, setLoading] = useState(true)
     const [expandedDescriptions, setExpandedDescriptions] = useState({}); // Track expanded descriptions
 
     useEffect(() => {
@@ -23,14 +24,20 @@ const AllTickets = () => {
     }, []);
 
     const fetchTickets = async () => {
+        setLoading(true)
         try {
             const response = await axios.get("http://localhost:5001/api/user/all_tickets", {
                 withCredentials: true,
             });
+            console.log(response.data)
             dispatch(getAllTicket(response.data));
         } catch (error) {
+            setLoading(false)
             console.error("Error fetching tickets:", error);
         }
+        finally{
+            setLoading(false)
+           }
     };
 
     const handleStatusChange = (ticketId, newStatus) => {
@@ -77,17 +84,28 @@ const AllTickets = () => {
         }));
     };
 
+    if (loading) {
+        return (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        );
+      }
+
     return (
 
         <>
             <Header />
             <div className="tickets-container">
-                {alltickets.map((ticket) => (
+            {alltickets.length > 0 ? (                
+                alltickets.map((ticket) => (
                     <Card key={ticket.id} className="ticket-card">
 
                         <Card.Img
                             variant="top"
-                            src={`http://localhost:5001/uploads/${ticket.user?.profileImage}`}
+                            src={ticket.user?.profileImage}
                             alt="User Profile"
                             className="profile-imgTickets" />
                         <Card.Body>
@@ -127,7 +145,10 @@ const AllTickets = () => {
                             </div>
                         </Card.Body>
                     </Card>
-                ))}
+                ))):(
+                  <h1 className="">No Ticket Yet</h1>
+                )}
+
             </div>
         </>
 

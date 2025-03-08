@@ -79,7 +79,7 @@ function Header() {
                   <Image
                     src={
                       // user.profileImage
-                      `http://localhost:5001/uploads/${user.profileImage}`
+                      user.profileImage
                     }
                     roundedCircle className="profile-img" />
                   <span className="profile-name">{user?.firstName} </span>

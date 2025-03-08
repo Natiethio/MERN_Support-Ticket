@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Table, Button } from 'react-bootstrap';
+import { Table, Button, Spinner } from 'react-bootstrap';
 import { PencilSquare, Trash } from 'react-bootstrap-icons'; // Import icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrashAlt, faEdit, faEnvelope } from '@fortawesome/free-solid-svg-icons';
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const [users, setUsers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate();
   const dispatch = useDispatch()  //A function that takes a selector function as its first argument. The selector function is responsible for selecting a part of the Redux store's state or computing derived data.
   const usersredux = useSelector(state => state.users.users) // select a state from a redux store
@@ -28,25 +29,31 @@ const Dashboard = () => {
   }, []);
 
   const fetchUser = async () => {
-
-    await axios.get('http://localhost:5001/api/user/getallusers', { 
+    setLoading(true)
+    try{
+    
+    const response = await axios.get('http://localhost:5001/api/user/getallusers', { 
       headers: {
         "Content-Type": "application/json",
       },
       withCredentials: true 
     })
-      .then(response => {
+
         const data = response.data;
         // setUsers(data); 
         console.log(data);
         dispatch(getUser(response.data))
-      })
-
-      .catch(error => {
+      
+    }
+    catch(error){
+        setLoading(false)
         console.error(error.status)
         console.error("There was an error fetching the users!", error);
         navigate("/login")  //Temporary exit
-      });
+    }
+   finally{
+    setLoading(false)
+   }
   }
 
 
@@ -99,6 +106,16 @@ const Dashboard = () => {
     setShowModal(false);
   };
 
+  if (loading) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <Spinner animation="border" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </Spinner>
+      </div>
+    );
+  }
+
 
   return (
     <>
@@ -118,7 +135,7 @@ const Dashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {usersredux.map((user, index) => (
+              {usersredux.length > 0 ? (                usersredux.map((user, index) => (
                   <tr key={index}>
                     <td>{user.firstName}</td>
                     <td>{user.lastName}</td>
@@ -128,7 +145,7 @@ const Dashboard = () => {
                       <img
                         src={
                           // user.profileImage
-                          `http://localhost:5001/uploads/${user.profileImage}`
+                          user.profileImage
                         }
                         // src='/Images/Profile-default.png'
                         alt="Profile"
@@ -147,7 +164,12 @@ const Dashboard = () => {
                       </Link>
                     </td>
                   </tr>
-                ))}
+                ))) : (
+                <tr>
+                  <td colSpan="6">No User found.</td>
+               </tr>
+                )}
+
               </tbody>
             </Table>
              <ToastContainer />

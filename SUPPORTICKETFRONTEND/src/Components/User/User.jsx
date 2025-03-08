@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Form, Button, Container, Row, Col, Modal } from 'react-bootstrap';
+import { Form, Button, Container, Row, Col, Modal, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import Header from '../Header/Header';
 import CreateTicket from '../Models/CreateTicket ';
@@ -17,6 +17,7 @@ const User = () => {
     const [cookies, removeCookie] = useCookies([]);
     const [user, setUser] = useState([]);
     const { isAuthenticated } = useContext(AuthContext);
+    const [loading, setLoading] = useState(true)
     const { formDataTicket } = useSelector((state) => state.users);
     const dispatch = useDispatch();
 
@@ -43,6 +44,7 @@ const User = () => {
     }, [dispatch]);
 
     async function handleUserData() {
+        setLoading(true)
         try {
             const response = await axios.get('http://localhost:5001/api/user/getnormaluser', {
                 headers: { "Content-Type": "application/json" },
@@ -50,8 +52,12 @@ const User = () => {
             });
             setUser(response.data.loginuser);
         } catch (error) {
+            setLoading(false)
             console.error("Error fetching user data", error);
         }
+        finally{
+            setLoading(false)
+           }
     }
 
     const handleCreateTicketClick = () => {
@@ -106,6 +112,16 @@ const User = () => {
         }
     };
 
+    if (loading) {
+        return (
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+            <Spinner animation="border" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </Spinner>
+          </div>
+        );
+      }
+
     return (
         <>
             <Header />
@@ -120,7 +136,7 @@ const User = () => {
                                     <div className="profile">
                                         <h6 className='profile-name'>Profile Image:</h6>
                                         <img
-                                            src={`http://localhost:5001/uploads/${user.profileImage}`}
+                                            src={user.profileImage}
                                             alt="Profile"
                                             className="profile-image-user"
                                         />
