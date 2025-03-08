@@ -4,7 +4,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const validator = require('validator');
 const cookieParser = require("cookie-parser");
+const cloudinary = require("../Configration/cloudinaryConfig");
 require('dotenv').config();
+const { Readable } = require("stream");
 const session = require('express-session');
 const { validate } = require('deep-email-validator');
 const { generateSecretToken } = require("../utils/jwtUtils")
@@ -121,288 +123,320 @@ class UserService {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    let profileImageName = null;
+    let profileImageURL = null;
+    // if (profileImage) {
+    //   const uniqueSuffix = `${Date.now()}-${Math.round(Math.random())}`;
+    //   profileImageURL = `${firstName}_${lastName}_${new Date().toISOString().split('T')[0]}_${uniqueSuffix}${path.extname(profileImage.originalname)}`;
+
+    //   // Ensure the uploads directory exists
+    //   const uploadPath = path.join(__dirname, "../../uploads");
+    //   if (!fs.existsSync(uploadPath)) {
+    //     fs.mkdirSync(uploadPath, { recursive: true });
+    //   }
+
+    //   // Save the file
+    //   const fullFilePath = path.join(uploadPath, profileImageURL);
+    //   fs.writeFileSync(fullFilePath, profileImage.buffer);
+    // } else {
+    //   if (sex === "male") {
+    //     profileImageURL = "Profile-Default-Male.png";
+    //   }
+    //   else {
+    //     profileImageURL = "Profile-Default-Female.png";
+    //   }
+
     if (profileImage) {
       const uniqueSuffix = `${Date.now()}-${Math.round(Math.random())}`;
-      profileImageName = `${firstName}_${lastName}_${new Date().toISOString().split('T')[0]}_${uniqueSuffix}${path.extname(profileImage.originalname)}`;
+      const imagePublicId = `${firstName}_${lastName}_${new Date().toISOString().split('T')[0]}_${uniqueSuffix}`;
 
-      // Ensure the uploads directory exists
-      const uploadPath = path.join(__dirname, "../../uploads");
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
+      
+      const stream = Readable.from(profileImage.buffer); 
+      const uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: "MERN-Support-Tickets",
+            public_id: imagePublicId,
+            overwrite: true,
+          },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        stream.pipe(uploadStream);
+      });
 
-      // Save the file
-      const fullFilePath = path.join(uploadPath, profileImageName);
-      fs.writeFileSync(fullFilePath, profileImage.buffer);
+      profileImageURL = uploadResult.secure_url;
     } else {
       if (sex === "male") {
-        profileImageName = "Profile-Default-Male.png";
+        profileImageURL = "https://res.cloudinary.com/dgrj6cljo/image/upload/v1741439297/Profile-Default-Male_irt67m.png"
       }
       else {
-        profileImageName = "Profile-Default-Female.png";
+        profileImageURL = "https://res.cloudinary.com/dgrj6cljo/image/upload/v1741439314/Profile-Default-Female_fpg5ne.png"
       }
-
     }
+  
 
-    // Save user to the database
-    const RegUser = new User({
-      firstName,
-      lastName,
-      sex,
-      email,
-      phone,
-      password: hashedPassword,
-      profileImage: profileImageName,
-      role,
-    });
+  // Save user to the database
+  const RegUser = new User({
+    firstName,
+    lastName,
+    sex,
+    email,
+    phone,
+    password: hashedPassword,
+    profileImage: profileImageURL,
+    role,
+  });
 
     return await RegUser.save();
   }
 
   async LoginUser(email, password) {
-    const secretKey = process.env.TOKEN_KEY;
-    if (!secretKey) throw new Error("SESSION_SECRET is not defined");
+  const secretKey = process.env.TOKEN_KEY;
+  if (!secretKey) throw new Error("SESSION_SECRET is not defined");
 
-    const errors = {};
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  const errors = {};
+  // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
 
-    // Validate email
-    if (!email) {
-      errors.email = "Email is required";
-    } else if (!emailRegex.test(email)) {
-      errors.email = "Invalid email format";
-    } else {
-      const user = await User.findOne({ email });
-      if (!user) {
-        errors.email = "User not found";
-      }
-    }
-
-    // Validate password
-    if (!password) {
-      errors.password = "Password is required";
-    }
-
-    // Stop further execution if validation errors exist
-    if (Object.keys(errors).length > 0) {
-      throw { validationErrors: errors };
-    }
-
-
+  // Validate email
+  if (!email) {
+    errors.email = "Email is required";
+  } else if (!emailRegex.test(email)) {
+    errors.email = "Invalid email format";
+  } else {
     const user = await User.findOne({ email });
-
     if (!user) {
-      errors.nouser = "No Such User Found";
-
-      if (Object.keys(errors).length > 0) {
-        throw { validationErrors: errors };
-      }
-
+      errors.email = "User not found";
     }
+  }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      errors.password = "Passwords do not match";
-    }
+  // Validate password
+  if (!password) {
+    errors.password = "Password is required";
+  }
+
+  // Stop further execution if validation errors exist
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
+
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    errors.nouser = "No Such User Found";
 
     if (Object.keys(errors).length > 0) {
       throw { validationErrors: errors };
     }
 
-    const refreshtoken = generateRefreshToken(user)
-
-    const token = generateSecretToken(user)
-
-    return {
-      user: user,
-      token: token,
-      refreshToken: refreshtoken
-    };
-    // return token;
   }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    errors.password = "Passwords do not match";
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
+
+  const refreshtoken = generateRefreshToken(user)
+
+  const token = generateSecretToken(user)
+
+  return {
+    user: user,
+    token: token,
+    refreshToken: refreshtoken
+  };
+  // return token;
+}
 
   async updateUser(userId, updateData, profileImage) {
-    const errors = {};
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-    const phoneRegex = /^(09|07)\d{8}$/;
-
-    
-    const { firstName, lastName, email, phone } = updateData;
+  const errors = {};
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+  const phoneRegex = /^(09|07)\d{8}$/;
 
 
-    if (!firstName) errors.firstName = "First name is required";
-    if (!lastName) errors.lastName = "Last name is required";
-    if (!email) errors.email = "Email is required";
-    if (!phone) errors.phone = "Phone number is required";
+  const { firstName, lastName, email, phone } = updateData;
 
 
-    if (!errors.email && !emailRegex.test(email)) {
-      errors.email = 'Invalid email format';
-    }
+  if (!firstName) errors.firstName = "First name is required";
+  if (!lastName) errors.lastName = "Last name is required";
+  if (!email) errors.email = "Email is required";
+  if (!phone) errors.phone = "Phone number is required";
 
-    if (Object.keys(errors).length > 0) {
-      throw { validationErrors: errors };
-    }
 
-    if (!errors.phone && phone.length !== 10) {
-      errors.phone = "Phone number must be 10 digits";
-    }
-
-    if (Object.keys(errors).length > 0) {
-      throw { validationErrors: errors };
-    }
-
-    if (phone && !phoneRegex.test(phone)) {
-      errors.phone = "Invalid phone number";
-    }
-
-    // Fetch the existing user for comparison
-    const existingUser = await User.findById(userId);
-    if (!existingUser) {
-      throw { message: "User not found" };
-    }
-
-    // Check for duplicate email only if the email is being updated
-    if (!errors.email && email !== existingUser.email) {
-      const emailExists = await User.findOne({ email });
-      if (emailExists) {
-        errors.email = 'Email already exists';
-      }
-    }
-
-    // Check for duplicate phone only if the phone is being updated
-    if (!errors.phone && phone !== existingUser.phone) {
-      const phoneExists = await User.findOne({ phone });
-      if (phoneExists) {
-        errors.phone = 'Phone number already exists';
-      }
-    }
-
-    if (Object.keys(errors).length > 0) {
-      throw { validationErrors: errors };
-    }
-
-    // Handle profile image logic
-    let profileImageName = existingUser.profileImage;
-    if (profileImage) {
-      // Generate a new profile image name
-      const uniqueSuffix = `${Date.now()}-${Math.round(Math.random())}`;
-      profileImageName = `${firstName}_${lastName}_${new Date().toISOString().split("T")[0]}_${uniqueSuffix}${path.extname(profileImage.originalname)}`;
-      console.log(profileImageName)
-      // Save the new image to the uploads folder
-      const uploadPath = path.join(__dirname, "../../uploads");
-      if (!fs.existsSync(uploadPath)) {
-        fs.mkdirSync(uploadPath, { recursive: true });
-      }
-      const fullFilePath = path.join(uploadPath, profileImageName);
-      fs.writeFileSync(fullFilePath, profileImage.buffer);
-
-      // Delete the old profile image (if it exists and is not a default image)
-      if (existingUser.profileImage && !existingUser.profileImage.startsWith("Profile-Default")) {
-        const oldFilePath = path.join(uploadPath, existingUser.profileImage);
-        if (fs.existsSync(oldFilePath)) {
-          fs.unlinkSync(oldFilePath);
-        }
-      }
-    }
-
-    updateData.profileImage = profileImageName;
-    return await User.findByIdAndUpdate(userId, updateData, { new: true });
+  if (!errors.email && !emailRegex.test(email)) {
+    errors.email = 'Invalid email format';
   }
 
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
 
-  async deleteUser(userId) {
+  if (!errors.phone && phone.length !== 10) {
+    errors.phone = "Phone number must be 10 digits";
+  }
 
-    const existingUser = await User.findById(userId);
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
 
-    if (!existingUser) {
-      throw { message: "User not found" };
+  if (phone && !phoneRegex.test(phone)) {
+    errors.phone = "Invalid phone number";
+  }
+
+  // Fetch the existing user for comparison
+  const existingUser = await User.findById(userId);
+  if (!existingUser) {
+    throw { message: "User not found" };
+  }
+
+  // Check for duplicate email only if the email is being updated
+  if (!errors.email && email !== existingUser.email) {
+    const emailExists = await User.findOne({ email });
+    if (emailExists) {
+      errors.email = 'Email already exists';
     }
+  }
 
+  // Check for duplicate phone only if the phone is being updated
+  if (!errors.phone && phone !== existingUser.phone) {
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) {
+      errors.phone = 'Phone number already exists';
+    }
+  }
+
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
+
+  // Handle profile image logic
+  let profileImageName = existingUser.profileImage;
+  if (profileImage) {
+    // Generate a new profile image name
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random())}`;
+    profileImageName = `${firstName}_${lastName}_${new Date().toISOString().split("T")[0]}_${uniqueSuffix}${path.extname(profileImage.originalname)}`;
+    console.log(profileImageName)
+    // Save the new image to the uploads folder
     const uploadPath = path.join(__dirname, "../../uploads");
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
+    const fullFilePath = path.join(uploadPath, profileImageName);
+    fs.writeFileSync(fullFilePath, profileImage.buffer);
 
+    // Delete the old profile image (if it exists and is not a default image)
     if (existingUser.profileImage && !existingUser.profileImage.startsWith("Profile-Default")) {
       const oldFilePath = path.join(uploadPath, existingUser.profileImage);
       if (fs.existsSync(oldFilePath)) {
         fs.unlinkSync(oldFilePath);
       }
     }
-
-    return await User.findByIdAndDelete(userId)
   }
+
+  updateData.profileImage = profileImageName;
+  return await User.findByIdAndUpdate(userId, updateData, { new: true });
+}
+
+
+  async deleteUser(userId) {
+
+  const existingUser = await User.findById(userId);
+
+  if (!existingUser) {
+    throw { message: "User not found" };
+  }
+
+  const uploadPath = path.join(__dirname, "../../uploads");
+  if (!fs.existsSync(uploadPath)) {
+    fs.mkdirSync(uploadPath, { recursive: true });
+  }
+
+  if (existingUser.profileImage && !existingUser.profileImage.startsWith("Profile-Default")) {
+    const oldFilePath = path.join(uploadPath, existingUser.profileImage);
+    if (fs.existsSync(oldFilePath)) {
+      fs.unlinkSync(oldFilePath);
+    }
+  }
+
+  return await User.findByIdAndDelete(userId)
+}
 
   async deleteTicket(ticketId) {
 
-    const existingTicket = await Ticket.findById(ticketId);
+  const existingTicket = await Ticket.findById(ticketId);
 
-    if (!existingTicket) {
-      throw { message: "Ticket not found" };
-    }
-
-    return await Ticket.findByIdAndDelete(ticketId)
+  if (!existingTicket) {
+    throw { message: "Ticket not found" };
   }
+
+  return await Ticket.findByIdAndDelete(ticketId)
+}
 
   async createTicket(userId, title, description, status) {
 
-    const errors = {};
+  const errors = {};
 
-    if (!title) {
-      errors.title = "Title is required";
-    }
+  if (!title) {
+    errors.title = "Title is required";
+  }
 
-    if (!description) {
-      errors.description = "Description is required";
-    }
+  if (!description) {
+    errors.description = "Description is required";
+  }
 
-    if (!status) {
-      errors.status = "Status is required";
-    }
+  if (!status) {
+    errors.status = "Status is required";
+  }
 
-    if (Object.keys(errors).length > 0) {
-      throw { validationErrors: errors };
-    }
+  if (Object.keys(errors).length > 0) {
+    throw { validationErrors: errors };
+  }
 
-    // console.log(userId, title, description, status)
+  // console.log(userId, title, description, status)
 
-    const ticket = new Ticket({
-      user_id: userId,
-      title,
-      description,
-      status
-    });
+  const ticket = new Ticket({
+    user_id: userId,
+    title,
+    description,
+    status
+  });
 
-    return await ticket.save();
-    // return ticket;
-  };
+  return await ticket.save();
+  // return ticket;
+};
 
-  async getMyTickets (userId) {
-    return await Ticket.find({ user_id: userId }).sort({ createdAt: -1 }); 
-  };
+  async getMyTickets(userId) {
+  return await Ticket.find({ user_id: userId }).sort({ createdAt: -1 });
+};
 
-  async updateTicketStatus (ticketId, status)  {
-    return await Ticket.findByIdAndUpdate(ticketId, { status }, { new: true });
-  };
+  async updateTicketStatus(ticketId, status) {
+  return await Ticket.findByIdAndUpdate(ticketId, { status }, { new: true });
+};
 
   // async getAllTickets (){
   //   // return await Ticket.find().populate("user", "name email profilePicture");
   //   return await Ticket.find();
   // };
 
-  async getAllTickets (){
-    try {
-        const tickets = await Ticket.find().populate('user_id', 'firstName lastName email profileImage');
-        return tickets;
-    } catch (error) {
-        throw new Error("Error fetching tickets: " + error.message);
-    }
+  async getAllTickets() {
+  try {
+    const tickets = await Ticket.find().populate('user_id', 'firstName lastName email profileImage');
+    return tickets;
+  } catch (error) {
+    throw new Error("Error fetching tickets: " + error.message);
+  }
 };
 
-  
+
 };
 
 module.exports = new UserService();
